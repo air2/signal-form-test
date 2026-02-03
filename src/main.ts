@@ -36,7 +36,7 @@ export class Playground implements OnInit {
       (ctx) => ctx.valueOf(schemaPath.Type) === 'Updated',
       (ctx) => {
         console.log('applyWhen', this.type());
-        this.whenValidated.set(this.formData().Type)
+        this.whenValidated.set(this.data().Type)
         required(ctx.firstName);
       }
     );
@@ -45,7 +45,7 @@ export class Playground implements OnInit {
       (ctx) => ctx.Type === 'Updated',
       (ctx) => {
         console.log('applyWhenValue', this.type());
-        this.whenValidated2.set(this.formData().Type)
+        this.whenValidated2.set(this.data().Type)
         required(ctx.firstName);
       }
     );
@@ -75,7 +75,8 @@ export class Playground implements OnInit {
   
   onSubmit() {
     
-    this.formData.Type().value.set('Updated');
+    // this.formData.Type().value.set('Updated');
+    this.data.update(v => {const u = {...v}; u.Type = 'Updated'; return u})
   }
 }
 
