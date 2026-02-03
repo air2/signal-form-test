@@ -14,7 +14,8 @@ import {
   selector: 'app-root',
   template: `Hello: {{this.whenValidated()}}<br/>
   Hello2: {{this.whenValidated2()}}<br />
-  Hello3: {{this.whenValidated3()}}
+  Hello3: {{this.whenValidated3()}}<br />
+  Hello4: {{this.whenValidated4()}}<br />
   <button (click)="onSubmit()" type="button">click</button>`,
 })
 export class Playground implements OnInit {
@@ -26,15 +27,16 @@ export class Playground implements OnInit {
   });
 
   readonly whenValidated = signal<string>('x')
-  readonly whenValidated2 = signal<string>('')
-  readonly whenValidated3 = signal<string>('')
+  readonly whenValidated2 = signal<string>('x')
+  readonly whenValidated3 = signal<string>('x')
+  readonly whenValidated4 = signal<string>('x')
   readonly formData = form(this.data, (schemaPath) => {
     applyWhen(
       schemaPath,
       (ctx) => ctx.valueOf(schemaPath.Type) === 'Updated',
       (ctx) => {
         console.log('applyWhen', this.type());
-        this.whenValidated.set(this.type() ?? '')
+        this.whenValidated.set(this.formData().Type)
         required(ctx.firstName);
       }
     );
@@ -43,7 +45,7 @@ export class Playground implements OnInit {
       (ctx) => ctx.Type === 'Updated',
       (ctx) => {
         console.log('applyWhenValue', this.type());
-        this.whenValidated2.set(this.type() ?? '')
+        this.whenValidated2.set(this.formData().Type)
         required(ctx.firstName);
       }
     );
@@ -53,16 +55,16 @@ export class Playground implements OnInit {
       (ctx) => ctx.value() === 'Updated',
       (ctx) => {
         console.log('applyWhen 3', this.type());
-        this.whenValidated3.set(this.type() ?? '')
+        this.whenValidated3.set(this.data().Type)
         required(ctx);
       }
     );
     applyWhenValue(
       schemaPath.Type,
-      (ctx) => ctx === 'Updated',
+      (ctx) => this.type() === 'Updated',
       (ctx) => {
-        console.log('applyWhen 3', this.type());
-        this.whenValidated3.set(this.type() ?? '')
+        console.log('applyWhen 4', this.type());
+        this.whenValidated4.set('changed' + this.data().Type)
         required(ctx);
       }
     );
@@ -73,7 +75,7 @@ export class Playground implements OnInit {
   
   onSubmit() {
     
-    this.type.set('Updated');
+    this.formData.Type().value.set('Updated');
   }
 }
 
