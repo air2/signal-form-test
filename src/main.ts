@@ -1,4 +1,4 @@
-import { Component, computed, linkedSignal, model, OnInit, signal } from '@angular/core';
+import { Component, computed, effect, inject, Injector, linkedSignal, model, OnInit, signal } from '@angular/core';
 import { bootstrapApplication } from '@angular/platform-browser';
 import {
   applyWhen,
@@ -12,7 +12,8 @@ import {
 
 @Component({
   selector: 'app-root',
-  template: `Hello: {{this.whenValidated()}}<br/>
+  template: `<br /> {{this.data().Type}} <br />
+  Hello: {{this.whenValidated()}}<br/>
   Hello2: {{this.whenValidated2()}}<br />
   Hello3: {{this.whenValidated3()}}<br />
   Hello4: {{this.whenValidated4()}}<br />
@@ -30,16 +31,24 @@ export class Playground implements OnInit {
   readonly whenValidated2 = signal<string>('x')
   readonly whenValidated3 = signal<string>('x')
   readonly whenValidated4 = signal<string>('x')
+
+  readonly inj = inject(Injector)
+
   readonly formData = form(this.data, (schemaPath) => {
-    applyWhen(
-      schemaPath,
-      (ctx) => ctx.valueOf(schemaPath.Type) === 'Updated',
-      (ctx) => {
-        console.log('applyWhen', this.type());
-        this.whenValidated.set(this.data().Type)
-        required(ctx.firstName);
-      }
-    );
+    effect(() => {
+
+      const type = this.typeOrDefault();
+      console.log('type', type)
+      applyWhen(
+        schemaPath,
+        (ctx) => ctx.valueOf(schemaPath.Type) === 'Updated',
+        (ctx) => {
+          console.log('applyWhen', this.type());
+          this.whenValidated.set(this.data().Type)
+          required(ctx.firstName);
+        }
+      );
+    }, { injector: this.inj});
     applyWhenValue(
       schemaPath,
       (ctx) => ctx.Type === 'Updated',
@@ -68,6 +77,8 @@ export class Playground implements OnInit {
         required(ctx);
       }
     );
+  }, {
+    injector: this.inj
   });
 
   ngOnInit() {
